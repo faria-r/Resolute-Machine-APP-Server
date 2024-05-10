@@ -32,6 +32,21 @@ async function run() {
       const result = await machineCollections.find(query).toArray();
       res.send(result);
     });
+    //API to get machine based on Name
+    app.get("/allMachines/:name", async (req, res) => {
+      const name = req.params.name;
+      const query = { name: name };
+      const result = await machineCollections.findOne(query);
+      res.send(result);
+    });
+    app.get("/machine/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await machineCollections.findOne(query);
+      res.send(result);
+    });
     //API to post user data on database
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -44,16 +59,16 @@ async function run() {
       res.send(result);
     });
     //API to Post Machine in Database
-    app.post('/allMachines',async(req,res)=>{
+    app.post("/allMachines", async (req, res) => {
       const machine = req.body;
-      const query ={name : machine.name}
+      const query = { name: machine.name };
       const existingMachine = await machineCollections.findOne(query);
-      if(existingMachine){
-        return res.send('This Machine Is Already Exists')
+      if (existingMachine) {
+        return res.send("This Machine Is Already Exists");
       }
-      const result = await machineCollections.insertOne(machine)
-      res.send(result)
-    })
+      const result = await machineCollections.insertOne(machine);
+      res.send(result);
+    });
     //API to get user data on database
     app.get("/users", async (req, res) => {
       const query = {};
@@ -86,10 +101,10 @@ async function run() {
       const query = { email: email };
       const user = await usersCollections.findOne(query);
       let admin = false;
-      if(user){
-        admin = user?.role === 'admin'
+      if (user) {
+        admin = user?.role === "admin";
       }
-      res.send({admin})
+      res.send({ admin });
     });
   } finally {
   }
