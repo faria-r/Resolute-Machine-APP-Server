@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 //middleware
@@ -43,6 +43,17 @@ async function run() {
       const result = await usersCollections.insertOne(user);
       res.send(result);
     });
+    //API to Post Machine in Database
+    app.post('/allMachines',async(req,res)=>{
+      const machine = req.body;
+      const query ={name : machine.name}
+      const existingMachine = await machineCollections.findOne(query);
+      if(existingMachine){
+        return res.send('This Machine Is Already Exists')
+      }
+      const result = await machineCollections.insertOne(machine)
+      res.send(result)
+    })
     //API to get user data on database
     app.get("/users", async (req, res) => {
       const query = {};
@@ -50,12 +61,36 @@ async function run() {
       res.send(result);
     });
     //API to get specific user data
-    app.get('/users/:email',async(req,res)=>{
+    app.get("/users/:email", async (req, res) => {
       const user = req.params.email;
-      const query={email:user};
-      const result = await usersCollections.findOne(query)
+      const query = { email: user };
+      const result = await usersCollections.findOne(query);
       res.send(result);
-    })
+    });
+    //make a user admin
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollections.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    //API to get Admin
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollections.findOne(query);
+      let admin = false;
+      if(user){
+        admin = user?.role === 'admin'
+      }
+      res.send({admin})
+    });
   } finally {
   }
 }
